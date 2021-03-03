@@ -1,0 +1,35 @@
+---
+title: "Bootstrapped Confidence Interval for Proportions"
+subtitle: "ESM 244"
+author: "Roupen Khanjian"
+date: "Winter 2021"
+output: 
+  html_document:
+    theme: cosmo
+    code_folding: show
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      warning = FALSE,
+                      message = FALSE)
+
+library(tidyverse) # Easily Install and Load the 'Tidyverse', CRAN v1.3.0
+library(here) # A Simpler Way to Find Your Files, CRAN v1.0.1
+library(janitor) # Simple Tools for Examining and Cleaning Dirty Data, CRAN v2.1.0
+library(boot) # Bootstrap Functions (Originally by Angelo Canty for S), CRAN v1.3-26
+library(broom) # Convert Statistical Objects into Tidy Tibbles, CRAN v0.7.4
+
+
+
+```
+
+## Data
+
+```{r}
+
+```
+
+

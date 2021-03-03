@@ -1,0 +1,93 @@
+---
+title: "Agglomerative hierarchical clustering"
+subtitle: "ESM 244"
+author: "Roupen Khanjian"
+date: "Winter 2021"
+output: 
+  html_document:
+    theme: cosmo
+    code_folding: hide
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      warning = FALSE,
+                      message = FALSE)
+library(tidyverse) # Easily Install and Load the 'Tidyverse', CRAN v1.3.0
+library(here) # A Simpler Way to Find Your Files, CRAN v1.0.1
+library(janitor) # Simple Tools for Examining and Cleaning Dirty Data, CRAN v2.1.0
+
+# Packages for cluster analysis:
+library(NbClust) # Determining the Best Number of Clusters in a Data Set, CRAN v3.0
+library(cluster) # "Finding Groups in Data": Cluster Analysis Extended Rousseeuw et al., CRAN v2.1.0
+library(factoextra) # Extract and Visualize the Results of Multivariate Data Analyses, CRAN v1.0.7
+library(dendextend) # Extending 'dendrogram' Functionality in R, CRAN v1.14.0
+library(ggdendro) # Create Dendrograms and Tree Diagrams Using 'ggplot2', CRAN v0.1.22
+
+
+```
+
+
+## Data wrangling
+
+```{r}
+water <- read_csv(here("data", "sbc_lter_registered_stream_chemistry.csv")) %>%
+  clean_names() %>% # clean column names
+  mutate(across(where(is.numeric), ~na_if(., -999))) %>% # convert values of -999 to NA
+  select(-timestamp_local) # remove timestamp column
+
+water_clustering <-  water %>% 
+  group_by(site_code) %>% # group by site code
+  summarise(across(where(is.numeric), # in the numeric column obtain means by site
+                   ~mean(.x, na.rm = TRUE))) %>% 
+  remove_rownames() %>% # remove rownames
+  column_to_rownames(var = "site_code") # add site code as rownames
+```
+
+## tables of means
+
+```{r}
+
+# make this with gt after completing lab
+
+```
+
+
+
+```{r}
+water_scale <- water_clustering %>% 
+  scale() # scale
+
+water_euc_dist <- dist(water_scale, # calculate euclidean distance
+                       method = "euclidean")
+
+# perform hierarchicical clustering via complete linkage. 
+water_hc_complete <- hclust(water_euc_dist, 
+                            method = "complete")
+
+
+
+```
+
+### ggplot dendrogram
+
+
+```{r}
+
+ggdendrogram(data = water_hc_complete,
+             rotate = TRUE) +
+  theme_minimal() +
+  labs(x = "Site Code") +
+  theme(panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        axis.text = element_text(face = "bold",
+                                 size = 11),
+        axis.title.y = element_text(face = "bold",
+                                 size = 12))
+
+```
+
+
+

@@ -1,0 +1,173 @@
+---
+title: 'Parameter Estimation: Wild Fish Catch'
+subtitle: "ESM 244"
+author: "Roupen Khanjian"
+date: "Winter 2021"
+output: 
+  html_document:
+    theme: cosmo
+    code_folding: hide
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      warning = FALSE,
+                      message = FALSE)
+
+library(tidyverse) # Easily Install and Load the 'Tidyverse', CRAN v1.3.0
+library(here) # A Simpler Way to Find Your Files, CRAN v1.0.1
+library(janitor) # Simple Tools for Examining and Cleaning Dirty Data, CRAN v2.1.0
+library(lubridate)
+library(gt)
+library(broom)
+library(nlstools)
+
+```
+
+## data
+
+```{r}
+
+fish <- read_csv(here("data", "fish_catch.csv"), skip = 2) %>% 
+  slice(-c(1:2, 66:69)) %>% 
+  clean_names() %>% 
+  mutate(wild_catch = as.numeric(wild_catch)) %>% 
+  mutate(year = as.Date(year, "%Y")) %>% 
+  mutate(year = year(year)) %>% 
+  mutate(index = seq(0,  62, 1))
+
+
+```
+
+## Exploratory graph of wild catch over time 
+
+```{r}
+
+ggplot(data = fish,
+       aes(x = year, y = wild_catch)) +
+  geom_line(size = 2, color = "darkblue") +
+  scale_x_continuous(breaks = seq(1950, 2012, 10)) +
+  scale_y_continuous(breaks =  seq(20, 100, 10)) +
+  theme_minimal() +
+  labs(x = "Year",
+      y = "Wild catch")
+
+ggplot(data = fish,
+       aes(x = year, y = wild_catch)) +
+  geom_point(size = 2, color = "darkblue") +
+  geom_hline(yintercept = 90,
+             linetype = "dashed") +
+  scale_x_continuous(breaks = seq(1950, 2012, 10)) +
+  scale_y_continuous(breaks =  seq(20, 100, 10)) +
+  theme_minimal() +
+  labs(x = "Year",
+      y = "Wild catch")
+
+ggplot(data = fish,
+       aes(x = year, y = log(wild_catch))) +
+  geom_point(size = 2, color = "darkblue") +
+  scale_x_continuous(breaks = seq(1950, 2012, 10)) +
+  # scale_y_continuous(breaks =  seq(20, 100, 10)) +
+  theme_minimal() +
+  labs(x = "Year",
+      y = "Wild catch")
+
+
+```
+
+Going to use initial estimates of parameteres as:
+
+* $K$ ~ 90
+* $P_0$ ~ 20
+* $A$ ~ `r (90 - 20)/20`
+
+## nonlinear least squares to find parameters
+
+```{r}
+
+# gonna try pre-1970 exp growth phase first
+fish_exp <- fish %>% 
+  filter(year < 1970) %>% 
+  mutate(ln_catch = log(wild_catch))
+
+lm_k <- lm(ln_catch ~ year,
+           data = fish_exp)
+
+coef(lm_k)
+
+```
+
+* $k$ ~ `r round(coef(lm_k)[2], 3)`
+
+```{r}
+
+(90 - 20)/20
+
+fish_nls <- nls(wild_catch ~ K/(1 + A*exp(-k*index)),
+                data = fish,
+                start = list(K = 90, A = 3.5, k = 0.058),
+                trace = TRUE)
+
+summary(fish_nls)
+
+model_fish <- tidy(fish_nls)
+
+model_fish[1:2] %>% 
+  gt() %>% 
+  tab_header(
+    title = "Parameter estimates",
+    subtitle = "Logistic Growth Model"
+  ) %>% 
+  fmt_number(
+    columns = vars(estimate),
+    decimals = 4
+  ) %>% 
+  tab_style(
+    style = list(
+      cell_text(style = "italic")
+    ),
+    locations = cells_body(
+      columns = 1
+    )
+  )
+  
+
+```
+
+
+
+## Finalized graph
+
+```{r}
+
+p_predict <- predict(fish_nls)
+
+fish_augment <-  augment(fish_nls)
+
+# Bind predictions to original data frame:
+fish_complete <- data.frame(fish, p_predict)
+
+# Plot them all together:
+ggplot(data = fish_complete, aes(x = year, y = wild_catch)) +
+  geom_point() +
+  geom_line(aes(x = year, y = p_predict)) +
+  theme_minimal()
+
+```
+
+conf int
+
+```{r}
+df_ci <- confint2(fish_nls)
+df_ci
+
+# 
+# UB <- df_ci[1, 2] / (1 + (df_ci[2, 2] * exp(-df_ci[3, 2] * fish$index)))
+# 
+
+```
+
+
+
