@@ -5,7 +5,7 @@ author: "Roupen Khanjian"
 date: "Winter 2021"
 output: 
   html_document:
-    theme: cosmo
+    theme: sandstone
     code_folding: hide
     toc: true
     toc_float: true
@@ -18,6 +18,7 @@ knitr::opts_chunk$set(echo = TRUE,
 library(tidyverse) # Easily Install and Load the 'Tidyverse', CRAN v1.3.0
 library(here) # A Simpler Way to Find Your Files, CRAN v1.0.1
 library(janitor) # Simple Tools for Examining and Cleaning Dirty Data, CRAN v2.1.0
+library(gt)
 
 # Packages for cluster analysis:
 library(NbClust) # Determining the Best Number of Clusters in a Data Set, CRAN v3.0
@@ -44,17 +45,59 @@ water_clustering <-  water %>%
                    ~mean(.x, na.rm = TRUE))) %>% 
   remove_rownames() %>% # remove rownames
   column_to_rownames(var = "site_code") # add site code as rownames
+
+# Table of means
+water_clustering %>% 
+  rownames_to_column(var = "site code") %>% 
+  gt() %>% 
+  tab_header(
+    title = "Mean Measurements of Water Chemistry by Site"
+  ) %>% 
+  fmt_number(
+    columns = vars(nh4_u_m, no3_u_m, po4_u_m, tdn_u_m,
+                   tdp_u_m, tpc_u_m, tpn_u_m, tpp_u_m,
+                   tss_mgper_liter, spec_cond_u_spercm),
+    decimals = 2
+  ) %>% 
+  data_color(
+    columns = vars(nh4_u_m, no3_u_m, po4_u_m, tdn_u_m,
+                   tdp_u_m, tpc_u_m, tpn_u_m, tpp_u_m,
+                   tss_mgper_liter, spec_cond_u_spercm),
+    colors = scales::col_numeric(
+      palette = c(
+        "lightskyblue", "dodgerblue", "royalblue4") ,
+      domain = NULL
+      )
+    ) %>% 
+  tab_style(
+    style = list(
+      cell_text(style = "oblique"),
+      cell_borders(
+        side = c("right"), 
+        color = "black",
+        weight = px(2)
+        )
+    ),
+    locations = cells_body(
+      columns = 1
+    )
+    ) %>% 
+  cols_label(
+    nh4_u_m = "Ammonium (micro-moles per liter)",
+    no3_u_m = "Nitrate (micro-moles per liter)",
+    po4_u_m = "Phosphorous (micro-moles per liter)",
+    tdn_u_m = "Total dissolved nitrogen (micro-moles per liter)",
+    tdp_u_m = "Total dissolved nitrogen (micro-moles per liter)",
+    tpc_u_m = "Total particulate carbon (micro-moles per liter)",
+    tpn_u_m = "Total particulate nitrogen (micro-moles per liter)",
+    tpp_u_m = "Total particulate phosphorus (micro-moles per liter)",
+    tss_mgper_liter = "Total suspended solids (milli-grams per liter)",
+    spec_cond_u_spercm = "Specific conductivity (micro-Simens per cm)"
+  )
+
 ```
 
-## tables of means
-
-```{r}
-
-# make this with gt after completing lab
-
-```
-
-
+## Finalized Dendrogram
 
 ```{r}
 water_scale <- water_clustering %>% 
@@ -63,29 +106,33 @@ water_scale <- water_clustering %>%
 water_euc_dist <- dist(water_scale, # calculate euclidean distance
                        method = "euclidean")
 
-# perform hierarchicical clustering via complete linkage. 
+# perform hierarchical clustering via complete linkage. 
 water_hc_complete <- hclust(water_euc_dist, 
                             method = "complete")
 
-
-
-```
-
-### ggplot dendrogram
-
-
-```{r}
-
+# Final plot
 ggdendrogram(data = water_hc_complete,
              rotate = TRUE) +
+  geom_text(size = 10) +
+  # geom_hline(aes(yintercept = water_hc_complete$height),
+  #            linetype = "dashed",
+  #            alpha = 0.5,
+  #            color = "white") +
+  scale_y_continuous(breaks = seq(0,9,1)) +
   theme_minimal() +
-  labs(x = "Site Code") +
+  labs(x = "Site Code",
+       y = "Height",
+       caption = "Agglomerative hierarchical clustering using complete linkage for\nwater chemistry by site in the Santa Barbara Coastal drainage area.") +
   theme(panel.grid.major.y = element_blank(),
         panel.grid.minor.y = element_blank(),
         axis.text = element_text(face = "bold",
                                  size = 11),
-        axis.title.y = element_text(face = "bold",
-                                 size = 12))
+        axis.title = element_text(face = "bold",
+                                 size = 12),
+        plot.caption = element_text(size = 10, face = "bold"))
+
+
+
 
 ```
 

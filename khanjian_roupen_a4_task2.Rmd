@@ -19,153 +19,206 @@ knitr::opts_chunk$set(echo = TRUE,
 library(tidyverse) # Easily Install and Load the 'Tidyverse', CRAN v1.3.0
 library(here) # A Simpler Way to Find Your Files, CRAN v1.0.1
 library(janitor) # Simple Tools for Examining and Cleaning Dirty Data, CRAN v2.1.0
-library(lubridate)
-library(gt)
-library(broom)
-library(nlstools)
+library(lubridate) # Make Dealing with Dates a Little Easier, CRAN v1.7.9.2
+library(gt) # Easily Create Presentation-Ready Display Tables, CRAN v0.2.2
+library(broom) # Convert Statistical Objects into Tidy Tibbles, CRAN v0.7.4
+library(nlstools) # Tools for Nonlinear Regression Analysis, CRAN v1.0-2
+library(latex2exp) # Use LaTeX Expressions in Plots, CRAN v0.4.0
+library(patchwork) # The Composer of Plots, CRAN v1.1.1
 
 ```
 
-## data
+
+## Exploratory Graph of Wild Catch Over Time and Mathematical Estimates
 
 ```{r}
 
-fish <- read_csv(here("data", "fish_catch.csv"), skip = 2) %>% 
-  slice(-c(1:2, 66:69)) %>% 
-  clean_names() %>% 
-  mutate(wild_catch = as.numeric(wild_catch)) %>% 
-  mutate(year = as.Date(year, "%Y")) %>% 
-  mutate(year = year(year)) %>% 
-  mutate(index = seq(0,  62, 1))
+# Read in data and clean:
+fish <- read_csv(here("data", "fish_catch.csv"), skip = 2) %>% # skip first 2 rows above header
+  slice(-c(1:2, 66:69)) %>% # remove rows without data
+  clean_names() %>% # clean column names
+  mutate(wild_catch = as.numeric(wild_catch)) %>% # convert wild_catch to numeric
+  mutate(year = as.numeric(year)) %>% # convert year to numeric 
+  mutate(index = seq(0,  62, 1)) # add an index column for nls
 
-
-```
-
-## Exploratory graph of wild catch over time 
-
-```{r}
-
+# eda plot:
 ggplot(data = fish,
        aes(x = year, y = wild_catch)) +
-  geom_line(size = 2, color = "darkblue") +
+  geom_line(size = 1.75, color = "dodgerblue", alpha = 0.5) +
+  geom_point(size = 2.5, color = "coral3") +
+  scale_x_continuous(breaks = seq(1950, 2012, 10)) + 
+  scale_y_continuous(breaks =  seq(20, 100, 10)) +
+  theme_minimal() +
+  labs(x = "Year",
+      y = "Wild Catch (Millions of Tons)") +
+  theme(axis.text = element_text(face = "bold",
+                                 size = 11),
+        axis.title = element_text(face = "bold",
+                                 size = 12),
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(color = "gray",
+                              fill = NA))
+
+
+```
+
+In the above graph we see a logistic growth model, where the global wild fish catch is increasing exponentially until it reaches a carrying capacity at around 1990. Mathematically this relationship looks like:
+
+$$
+\begin{equation}
+P(t) = \frac{K}{1 + Ae^{-kt}}, \text{where} \\
+K = \text{carrying capacity} \\
+k = \text{population growth rate constant} \\
+A = \frac{K - P_0}{P_0}, \text{where } P_0 = \text{ inital population size} 
+\end{equation}
+$$
+
+```{r}
+ggplot(data = fish,
+       aes(x = year, y = wild_catch)) +
+  geom_point(size = 2, color = "coral3") +
+  geom_hline(yintercept = 90,  linetype = "dashed", # add K line
+             color = "darkslateblue", size = 1.5, alpha = 0.9) +
+  annotate("text", x = 1965, y = 85, # add K text
+           label = "K~90", size = 10, color = "darkslateblue") +
+  geom_hline(yintercept = 20,linetype = "dashed", # add P_0 line
+             color = "forestgreen", size = 1.5, alpha = 0.9) +
+  annotate("text", x = 2000, y = 26, # add P_0 text
+           label = unname(TeX("$P_0 ~ 20")), size = 10, color = "forestgreen") +
   scale_x_continuous(breaks = seq(1950, 2012, 10)) +
   scale_y_continuous(breaks =  seq(20, 100, 10)) +
   theme_minimal() +
   labs(x = "Year",
-      y = "Wild catch")
+      y = "Wild Catch (Millions of Tons)") +
+  theme(axis.text = element_text(face = "bold",
+                                 size = 11),
+        axis.title = element_text(face = "bold",
+                                 size = 12),
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(color = "gray",
+                              fill = NA))
+```
 
-ggplot(data = fish,
-       aes(x = year, y = wild_catch)) +
-  geom_point(size = 2, color = "darkblue") +
-  geom_hline(yintercept = 90,
-             linetype = "dashed") +
-  scale_x_continuous(breaks = seq(1950, 2012, 10)) +
-  scale_y_continuous(breaks =  seq(20, 100, 10)) +
-  theme_minimal() +
-  labs(x = "Year",
-      y = "Wild catch")
 
+Looking at the above plot will be using initial estimates of parameters as:
+
+* $K$ ~ 90 (Millions of tons)
+* $P_0$ ~ 20 (Millions of tons)
+* $A$ ~ $\frac{90 - 20}{20} =$  `r (90 - 20)/20` 
+
+To find an initial estimate for $k$, first we'll graph the log of `wild catch` and see where is our exponential growth phase
+
+```{r}
 ggplot(data = fish,
        aes(x = year, y = log(wild_catch))) +
-  geom_point(size = 2, color = "darkblue") +
+  geom_point(size = 2, color = "coral3") +
   scale_x_continuous(breaks = seq(1950, 2012, 10)) +
-  # scale_y_continuous(breaks =  seq(20, 100, 10)) +
   theme_minimal() +
   labs(x = "Year",
-      y = "Wild catch")
-
-
+      y = "ln(Wild Catch)",
+      title = "Log-Transformed Wild Catch") +
+  theme(axis.text = element_text(face = "bold",
+                                 size = 11),
+        axis.title = element_text(face = "bold",
+                                 size = 12.5),
+        plot.title = element_text(face = "bold",
+                                  size = 14.5),
+        panel.grid.minor.x = element_blank(),
+        panel.background = element_rect(color = "gray",
+                              fill = NA))
 ```
 
-Going to use initial estimates of parameteres as:
-
-* $K$ ~ 90
-* $P_0$ ~ 20
-* $A$ ~ `r (90 - 20)/20`
-
-## nonlinear least squares to find parameters
+We can define our exponential growth phase to be from 1950 until 1970. 
 
 ```{r}
 
-# gonna try pre-1970 exp growth phase first
+# Going to define exponential growth phase as pre-1970 exp growth phase first
 fish_exp <- fish %>% 
-  filter(year < 1970) %>% 
-  mutate(ln_catch = log(wild_catch))
+  filter(year < 1970) %>% # filter for only exponential growth phase
+  mutate(ln_catch = log(wild_catch)) # add response log response column to find k
 
 lm_k <- lm(ln_catch ~ year,
-           data = fish_exp)
-
-coef(lm_k)
+           data = fish_exp) # linear model to find slope coef
 
 ```
 
-* $k$ ~ `r round(coef(lm_k)[2], 3)`
+* $k$ ~ `r round(coef(lm_k)[2], 3)`  (Millions of tons growth per year)
+
+## Nonlinear Least Squares to Find Parameters
+
 
 ```{r}
 
-(90 - 20)/20
-
-fish_nls <- nls(wild_catch ~ K/(1 + A*exp(-k*index)),
-                data = fish,
-                start = list(K = 90, A = 3.5, k = 0.058),
-                trace = TRUE)
-
-summary(fish_nls)
+# nls model
+fish_nls <- nls(wild_catch ~ K/(1 + A*exp(-k*index)), # formula
+                data = fish, # data
+                start = list(K = 90, A = 3.5, k = 0.058), # initial estimates of parameters
+                trace = FALSE) # no trace output of iterations
 
 model_fish <- tidy(fish_nls)
 
+# nice looking gt table
 model_fish[1:2] %>% 
   gt() %>% 
-  tab_header(
+  tab_header( # add header
     title = "Parameter estimates",
     subtitle = "Logistic Growth Model"
   ) %>% 
-  fmt_number(
+  fmt_number( # convert to numeric column
     columns = vars(estimate),
     decimals = 4
   ) %>% 
   tab_style(
     style = list(
-      cell_text(style = "italic")
+      cell_text(style = "italic"),
+      cell_borders(
+        side = c("right"), 
+        color = "black",
+        weight = px(2)
+        )
     ),
     locations = cells_body(
       columns = 1
     )
+  ) %>% 
+  cols_label(
+    estimate = "Estimate (Millions of tons)"
   )
   
 
 ```
 
 
-
-## Finalized graph
+## Finalized graph with Data and Model Output
 
 ```{r}
 
+# Find predicted value from model:
 p_predict <- predict(fish_nls)
-
-fish_augment <-  augment(fish_nls)
 
 # Bind predictions to original data frame:
 fish_complete <- data.frame(fish, p_predict)
 
 # Plot them all together:
 ggplot(data = fish_complete, aes(x = year, y = wild_catch)) +
-  geom_point() +
-  geom_line(aes(x = year, y = p_predict)) +
-  theme_minimal()
-
-```
-
-conf int
-
-```{r}
-df_ci <- confint2(fish_nls)
-df_ci
-
-# 
-# UB <- df_ci[1, 2] / (1 + (df_ci[2, 2] * exp(-df_ci[3, 2] * fish$index)))
-# 
+  geom_point(size = 2, color = "coral3") +
+  geom_line(aes(x = year, y = p_predict), color = "dodgerblue1",
+            size = 2, alpha = 0.7) +
+    annotate("text", x = 2002, y = 70,
+             label = unname(TeX("$P(t) = \\frac{100.28}{1 + 4.32e^{-0.07t}}$")), 
+             size = 7, color = "dodgerblue1") +
+  scale_x_continuous(breaks = seq(1950, 2012, 10)) +
+  scale_y_continuous(breaks =  seq(20, 100, 10)) +
+  theme_minimal() +
+  labs(x = "Year",
+      y = "Wild Catch (Millions of Tons)") +
+  theme(axis.text = element_text(face = "bold",
+                                 size = 11),
+        axis.title = element_text(face = "bold",
+                                 size = 12.5),
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(color = "gray",
+                              fill = NA))
 
 ```
 

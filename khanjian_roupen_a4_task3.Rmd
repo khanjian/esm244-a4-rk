@@ -5,8 +5,8 @@ author: "Roupen Khanjian"
 date: "Winter 2021"
 output: 
   html_document:
-    theme: cosmo
-    code_folding: show
+    theme: lumen
+    code_folding: hide
     toc: true
     toc_float: true
 ---
@@ -21,7 +21,7 @@ library(here) # A Simpler Way to Find Your Files, CRAN v1.0.1
 library(janitor) # Simple Tools for Examining and Cleaning Dirty Data, CRAN v2.1.0
 library(boot) # Bootstrap Functions (Originally by Angelo Canty for S), CRAN v1.3-26
 library(broom) # Convert Statistical Objects into Tidy Tibbles, CRAN v0.7.4
-
+library(gt) # Easily Create Presentation-Ready Display Tables, CRAN v0.2.2
 
 
 ```
@@ -29,6 +29,110 @@ library(broom) # Convert Statistical Objects into Tidy Tibbles, CRAN v0.7.4
 ## Data
 
 ```{r}
+
+prob_initial <- 22/36 # proportion of initial sample
+
+# make a sample where 1 = experienced exclusionary conduct
+ucsb_vector <- c(rep(0,14), rep(1,22)) 
+
+# randomize sample (not sure if theis step is necessary)
+ucsb_vector <- sample(ucsb_vector, 36, replace = FALSE)
+
+# sum(ucsb_vector) # double check that there are 22 1s
+
+# Create function that calculates proportion
+proportions_function <- function(x,i) {
+  sum(rbinom(36, 1, x[i]))/ 36
+}
+
+# Create 50,000 bootstrap samples
+ucsb_boot_50k <- boot(ucsb_vector,
+                        statistic = proportions_function,
+                        R = 50000)
+
+tidy(ucsb_boot_50k) %>% 
+  gt() %>% 
+  tab_header(
+    title = "Bootstrap Statistics"
+  ) %>% 
+  fmt_number(
+    columns = vars(statistic, bias, std.error),
+    decimals = 7
+  ) %>% 
+  cols_label(
+    statistic = "Original Sample Mean",
+    bias = "Bias",
+    std.error = "Standard Error"
+  )
+  
+
+```
+
+
+
+## Histogram of Bootstrapped Proportions
+
+```{r}
+# convert vector into data frame
+ucsb_boot_50k_df <- data.frame(bs_prop = ucsb_boot_50k$t)
+
+ggplot(data = ucsb_boot_50k_df,
+       aes(x = bs_prop)) +
+  geom_histogram(color = "white",
+                 fill = "mediumaquamarine", bins = 25) +
+  geom_rug(color = "red") +
+  scale_x_continuous(breaks = seq(0.3, 0.9, 0.1)) +
+  scale_y_continuous(breaks = seq(0, 6000, 1000)) +
+  theme_minimal()  +
+  labs(x = "Bootstrap Proportion",
+      y = "Count",
+      caption = "Histogram of Bootstrapped Proportions") +
+  theme(axis.text = element_text(face = "bold",
+                                 size = 11),
+        axis.title = element_text(face = "bold",
+                                 size = 12.5),
+        plot.caption = element_text(face = "bold",
+                                  size = 14.5),
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(color = "gray",
+                              fill = NA))
+  
+
+```
+
+
+## Confidence interval
+
+```{r}
+
+boot.ci(ucsb_boot_50k, conf = 0.95, type = "perc")
+
+```
+
+
+## Table breakdown
+
+```{r}
+
+ucsb_boot_50k_df %>% 
+  count(bs_prop) %>% 
+  rename(Proportion = "bs_prop") %>%
+  gt() %>% 
+  tab_header(
+    title = "Bootstrap samples"
+  ) %>% 
+  fmt_number(
+    columns = vars(Proportion),
+    decimals = 3
+  ) %>% 
+  data_color(
+    columns = vars(n),
+    colors = scales::col_numeric(
+      palette = c(
+        "lightskyblue1", "dodgerblue", "royalblue4") ,
+      domain = NULL
+      )
+    )
 
 ```
 
