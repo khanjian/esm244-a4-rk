@@ -24,9 +24,10 @@ library(broom) # Convert Statistical Objects into Tidy Tibbles, CRAN v0.7.4
 library(gt) # Easily Create Presentation-Ready Display Tables, CRAN v0.2.2
 
 
+
 ```
 
-## Data
+## Create Proportion function and Find Bootstrap Samples
 
 ```{r}
 
@@ -48,19 +49,21 @@ proportions_function <- function(x,i) {
 # Create 50,000 bootstrap samples
 ucsb_boot_50k <- boot(ucsb_vector,
                         statistic = proportions_function,
-                        R = 50000)
+                        R = 50000) # 50,000 bootstrap samples
 
+# Table of Bootstrap stats
 tidy(ucsb_boot_50k) %>% 
   gt() %>% 
   tab_header(
-    title = "Bootstrap Statistics"
+    title = "Bootstrap Statistics",
+    subtitle = "From 50,000 bootstrap samples"
   ) %>% 
   fmt_number(
     columns = vars(statistic, bias, std.error),
     decimals = 7
   ) %>% 
   cols_label(
-    statistic = "Original Sample Mean",
+    statistic = "Sample Mean",
     bias = "Bias",
     std.error = "Standard Error"
   )
@@ -80,13 +83,13 @@ ggplot(data = ucsb_boot_50k_df,
        aes(x = bs_prop)) +
   geom_histogram(color = "white",
                  fill = "mediumaquamarine", bins = 25) +
-  geom_rug(color = "red") +
+  geom_rug(color = "red",
+           alpha = 0.1) +
   scale_x_continuous(breaks = seq(0.3, 0.9, 0.1)) +
   scale_y_continuous(breaks = seq(0, 6000, 1000)) +
   theme_minimal()  +
   labs(x = "Bootstrap Proportion",
-      y = "Count",
-      caption = "Histogram of Bootstrapped Proportions") +
+      y = "Count") +
   theme(axis.text = element_text(face = "bold",
                                  size = 11),
         axis.title = element_text(face = "bold",
@@ -96,21 +99,13 @@ ggplot(data = ucsb_boot_50k_df,
         panel.grid.minor = element_blank(),
         panel.background = element_rect(color = "gray",
                               fill = NA))
-  
+
 
 ```
 
 
-## Confidence interval
 
-```{r}
-
-boot.ci(ucsb_boot_50k, conf = 0.95, type = "perc")
-
-```
-
-
-## Table breakdown
+## Table Breakdown of Bootstrap Samples
 
 ```{r}
 
@@ -136,4 +131,48 @@ ucsb_boot_50k_df %>%
 
 ```
 
+## Confidence Interval
+
+```{r}
+
+# Obtain the 95% confidence interval
+ucsb_ci <- boot.ci(ucsb_boot_50k, conf = 0.95, type = "perc")
+
+# Put values into tibble
+tibble_ci <- tibble(`Lower Bound` = ucsb_ci$percent[4], 
+                    `Upper Bound` = ucsb_ci$percent[5])
+
+# Combine with stats from bootstrap      
+boot_all_stats <- tibble(tidy(ucsb_boot_50k), tibble_ci)
+
+# Create table
+boot_all_stats %>% 
+  gt() %>% 
+  tab_header(
+    title = "Bootstrap Statistics and Confidence Interval",
+    subtitle = "From 50,000 bootstrap samples"
+  ) %>% 
+  fmt_number(
+    columns = vars(bias, std.error),
+    decimals = 7
+  ) %>% 
+  fmt_number(
+    columns = vars(statistic, `Lower Bound`, `Upper Bound`),
+    decimals = 3
+  ) %>% 
+  cols_label(
+    statistic = "Sample Mean",
+    bias = "Bias",
+    std.error = "Standard Error"
+  ) %>% 
+  tab_footnote(
+    footnote = "Based off 95% confidence interval",
+    locations = cells_column_labels(vars(`Lower Bound`, `Upper Bound`))
+  )
+
+```
+
+&nbsp;
+
+In the above table we can see that the 95% confidence interval for the proportion of genderqueer individuals experiencing exclusionary conduct is (`r round(ucsb_ci$percent[4], 3)`, `r round(ucsb_ci$percent[5], 3)`). This means that we are 95% confident that the true population proportion of genderqueer individuals experiencing exclusionary conduct falls within this interval. Thus, if we created an infinite number of confidence intervals we would expect 95% of them to contain the true population proportion parameter. 
 
