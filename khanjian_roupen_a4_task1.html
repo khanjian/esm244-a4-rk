@@ -12,7 +12,7 @@
 <meta name="author" content="Roupen Khanjian" />
 
 
-<title>Agglomerative hierarchical clustering</title>
+<title>Agglomerative Hierarchical Clustering</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -1425,6 +1425,9 @@ button.code-folding-btn:focus {
 summary {
   display: list-item;
 }
+pre code {
+  padding: 0;
+}
 </style>
 
 
@@ -1566,7 +1569,7 @@ div.tocify {
 
 <!-- setup 3col/9col grid for toc_float and main content  -->
 <div class="row">
-<div class="col-xs-12 col-sm-4 col-md-3">
+<div class="col-sm-12 col-md-4 col-lg-3">
 <div id="TOC" class="tocify">
 </div>
 </div>
@@ -1580,7 +1583,7 @@ div.tocify {
 
 <div class="btn-group pull-right float-right">
 <button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
-<ul class="dropdown-menu" style="min-width: 50px;">
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
 <li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
 <li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
 </ul>
@@ -1588,7 +1591,7 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">Agglomerative hierarchical clustering</h1>
+<h1 class="title toc-ignore">Agglomerative Hierarchical Clustering</h1>
 <h3 class="subtitle">ESM 244</h3>
 <h4 class="author">Roupen Khanjian</h4>
 <h4 class="date">Winter 2021</h4>
@@ -1662,7 +1665,7 @@ water_clustering %&gt;%
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#rizinnuacp .gt_table {
+#pxeyqhszgo .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -1687,7 +1690,7 @@ water_clustering %&gt;%
   border-left-color: #D3D3D3;
 }
 
-#rizinnuacp .gt_heading {
+#pxeyqhszgo .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1699,7 +1702,7 @@ water_clustering %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#rizinnuacp .gt_title {
+#pxeyqhszgo .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1709,7 +1712,7 @@ water_clustering %&gt;%
   border-bottom-width: 0;
 }
 
-#rizinnuacp .gt_subtitle {
+#pxeyqhszgo .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1719,13 +1722,13 @@ water_clustering %&gt;%
   border-top-width: 0;
 }
 
-#rizinnuacp .gt_bottom_border {
+#pxeyqhszgo .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#rizinnuacp .gt_col_headings {
+#pxeyqhszgo .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1740,7 +1743,7 @@ water_clustering %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#rizinnuacp .gt_col_heading {
+#pxeyqhszgo .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1760,7 +1763,7 @@ water_clustering %&gt;%
   overflow-x: hidden;
 }
 
-#rizinnuacp .gt_column_spanner_outer {
+#pxeyqhszgo .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1772,15 +1775,15 @@ water_clustering %&gt;%
   padding-right: 4px;
 }
 
-#rizinnuacp .gt_column_spanner_outer:first-child {
+#pxeyqhszgo .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#rizinnuacp .gt_column_spanner_outer:last-child {
+#pxeyqhszgo .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#rizinnuacp .gt_column_spanner {
+#pxeyqhszgo .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1792,7 +1795,7 @@ water_clustering %&gt;%
   width: 100%;
 }
 
-#rizinnuacp .gt_group_heading {
+#pxeyqhszgo .gt_group_heading {
   padding: 8px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1814,7 +1817,7 @@ water_clustering %&gt;%
   vertical-align: middle;
 }
 
-#rizinnuacp .gt_empty_group_heading {
+#pxeyqhszgo .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1829,15 +1832,15 @@ water_clustering %&gt;%
   vertical-align: middle;
 }
 
-#rizinnuacp .gt_from_md > :first-child {
+#pxeyqhszgo .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#rizinnuacp .gt_from_md > :last-child {
+#pxeyqhszgo .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#rizinnuacp .gt_row {
+#pxeyqhszgo .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1856,7 +1859,7 @@ water_clustering %&gt;%
   overflow-x: hidden;
 }
 
-#rizinnuacp .gt_stub {
+#pxeyqhszgo .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1868,7 +1871,7 @@ water_clustering %&gt;%
   padding-left: 12px;
 }
 
-#rizinnuacp .gt_summary_row {
+#pxeyqhszgo .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1878,7 +1881,7 @@ water_clustering %&gt;%
   padding-right: 5px;
 }
 
-#rizinnuacp .gt_first_summary_row {
+#pxeyqhszgo .gt_first_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1888,7 +1891,7 @@ water_clustering %&gt;%
   border-top-color: #D3D3D3;
 }
 
-#rizinnuacp .gt_grand_summary_row {
+#pxeyqhszgo .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1898,7 +1901,7 @@ water_clustering %&gt;%
   padding-right: 5px;
 }
 
-#rizinnuacp .gt_first_grand_summary_row {
+#pxeyqhszgo .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1908,11 +1911,11 @@ water_clustering %&gt;%
   border-top-color: #D3D3D3;
 }
 
-#rizinnuacp .gt_striped {
+#pxeyqhszgo .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#rizinnuacp .gt_table_body {
+#pxeyqhszgo .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1921,7 +1924,7 @@ water_clustering %&gt;%
   border-bottom-color: #D3D3D3;
 }
 
-#rizinnuacp .gt_footnotes {
+#pxeyqhszgo .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1935,13 +1938,13 @@ water_clustering %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#rizinnuacp .gt_footnote {
+#pxeyqhszgo .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding: 4px;
 }
 
-#rizinnuacp .gt_sourcenotes {
+#pxeyqhszgo .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1955,46 +1958,46 @@ water_clustering %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#rizinnuacp .gt_sourcenote {
+#pxeyqhszgo .gt_sourcenote {
   font-size: 90%;
   padding: 4px;
 }
 
-#rizinnuacp .gt_left {
+#pxeyqhszgo .gt_left {
   text-align: left;
 }
 
-#rizinnuacp .gt_center {
+#pxeyqhszgo .gt_center {
   text-align: center;
 }
 
-#rizinnuacp .gt_right {
+#pxeyqhszgo .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#rizinnuacp .gt_font_normal {
+#pxeyqhszgo .gt_font_normal {
   font-weight: normal;
 }
 
-#rizinnuacp .gt_font_bold {
+#pxeyqhszgo .gt_font_bold {
   font-weight: bold;
 }
 
-#rizinnuacp .gt_font_italic {
+#pxeyqhszgo .gt_font_italic {
   font-style: italic;
 }
 
-#rizinnuacp .gt_super {
+#pxeyqhszgo .gt_super {
   font-size: 65%;
 }
 
-#rizinnuacp .gt_footnote_marks {
+#pxeyqhszgo .gt_footnote_marks {
   font-style: italic;
   font-size: 65%;
 }
 </style>
-<div id="rizinnuacp" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;"><table class="gt_table">
+<div id="pxeyqhszgo" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;"><table class="gt_table">
   <thead class="gt_header">
     <tr>
       <th colspan="11" class="gt_heading gt_title gt_font_normal" style>Mean Measurements of Water Chemistry by Site</th>
@@ -2209,10 +2212,6 @@ water_hc_complete &lt;- hclust(water_euc_dist,
 ggdendrogram(data = water_hc_complete,
              rotate = TRUE) +
   geom_text(size = 10) +
-  # geom_hline(aes(yintercept = water_hc_complete$height),
-  #            linetype = &quot;dashed&quot;,
-  #            alpha = 0.5,
-  #            color = &quot;white&quot;) +
   scale_y_continuous(breaks = seq(0,9,1)) +
   theme_minimal() +
   labs(x = &quot;Site Code&quot;,

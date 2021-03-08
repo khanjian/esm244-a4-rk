@@ -59,9 +59,17 @@ tidy(ucsb_boot_50k) %>%
     subtitle = "From 50,000 bootstrap samples"
   ) %>% 
   fmt_number(
-    columns = vars(statistic, bias, std.error),
+    columns = vars(bias),
     decimals = 7
   ) %>% 
+  fmt_number(
+    columns = vars(statistic),
+    decimals = 3
+  ) %>% 
+  fmt_number(
+    columns = vars(std.error),
+    decimals = 5
+  )%>% 
   cols_label(
     statistic = "Sample Mean",
     bias = "Bias",
@@ -153,13 +161,17 @@ boot_all_stats %>%
     subtitle = "From 50,000 bootstrap samples"
   ) %>% 
   fmt_number(
-    columns = vars(bias, std.error),
+    columns = vars(bias),
     decimals = 7
   ) %>% 
   fmt_number(
     columns = vars(statistic, `Lower Bound`, `Upper Bound`),
     decimals = 3
   ) %>% 
+  fmt_number(
+    columns = vars(std.error),
+    decimals = 5
+  )%>% 
   cols_label(
     statistic = "Sample Mean",
     bias = "Bias",
